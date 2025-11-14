@@ -5,11 +5,11 @@
   "scripts": {
     "dev": "node scripts/dev-local.mjs",
     "dev:https": "node scripts/dev-local.mjs --experimental-https",
-    "build": "node scripts/run-with-env-local.mjs prisma generate && node scripts/run-with-env-local.mjs next build --turbopack",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "test:auto-sync": "npx ts-node scripts/test-auto-sync.ts",
-    "postinstall": "node scripts/run-with-env-local.mjs prisma generate"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",
