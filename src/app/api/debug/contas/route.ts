@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
           id: true,
           nickname: true,
           ml_user_id: true,
-          createdAt: true,
+          created_at: true,
         },
         orderBy: { nickname: "asc" },
       }),
@@ -25,11 +25,11 @@ export async function GET(req: NextRequest) {
         where: { userId: session.sub },
         select: {
           id: true,
-          shopName: true,
-          shopId: true,
-          createdAt: true,
+          shop_name: true,
+          shop_id: true,
+          created_at: true,
         },
-        orderBy: { shopName: "asc" },
+        orderBy: { shop_name: "asc" },
       })
     ]);
 
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
 
         return {
           id: conta.id,
-          nickname: conta.shopName,
+          nickname: conta.shop_name,
           plataforma: "Shopee",
           vendasOntem: {
             total: vendas.length,
