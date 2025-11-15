@@ -85,11 +85,17 @@ export async function POST(request: NextRequest) {
         
         if (platform === 'Mercado Livre' || platform === 'Geral') {
           await prisma.meliVenda.create({
-            data: vendaData
+            data: {
+              ...vendaData,
+              meliAccountId: '' // Excel imports don't have account ID - needs to be fixed
+            }
           });
         } else if (platform === 'Shopee') {
           await prisma.shopeeVenda.create({
-            data: vendaData
+            data: {
+              ...vendaData,
+              shopeeAccountId: '' // Excel imports don't have account ID - needs to be fixed
+            }
           });
         }
         
@@ -202,7 +208,7 @@ function parseRowData(row: unknown[], mapping: { [key: string]: string }, platfo
     return index !== undefined && index < row.length ? row[index] : null;
   };
 
-  const parseDate = (dateStr: string) => {
+  const parseDate = (dateStr: unknown) => {
     if (!dateStr) return new Date();
     
     // Tentar diferentes formatos de data
@@ -225,7 +231,7 @@ function parseRowData(row: unknown[], mapping: { [key: string]: string }, platfo
       }
     }
     
-    return new Date(dateStr);
+    return new Date(String(dateStr));
   };
 
   const parseDecimal = (value: unknown) => {

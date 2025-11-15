@@ -3,12 +3,22 @@ const connections = new Map<string, ReadableStreamDefaultController>();
 
 // Função para enviar progresso para um usuário específico
 export function sendProgressToUser(userId: string, progress: {
-  type: "sync_start" | "sync_progress" | "sync_complete" | "sync_error";
-  title: string;
+  type: "sync_start" | "sync_progress" | "sync_complete" | "sync_error" | "sync_warning";
+  title?: string;
   message: string;
   progressValue?: number;
   progressMax?: number;
   progressLabel?: string;
+  current?: number;
+  total?: number;
+  fetched?: number;
+  expected?: number;
+  accountId?: string;
+  accountNickname?: string;
+  page?: number;
+  offset?: number;
+  debugData?: unknown;
+  mlUserId?: string;
 }) {
   const controller = connections.get(userId);
   if (controller) {

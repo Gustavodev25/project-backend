@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(npm run build:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []

@@ -158,7 +158,7 @@ export class ContaPagarSyncService {
         // Skip if no changes
         if (
           existingAccount.descricao === contaData.descricao &&
-          existingAccount.valor === contaData.valor &&
+          Number(existingAccount.valor) === contaData.valor &&
           existingAccount.dataVencimento.getTime() === contaData.dataVencimento.getTime() &&
           existingAccount.status === contaData.status &&
           existingAccount.categoriaId === contaData.categoriaId &&

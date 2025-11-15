@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         }
 
         result = await refreshMeliAccountToken(meliAccount, true);
-        accountName = meliAccount.ml_user_id || 'Conta ML';
+        accountName = String(meliAccount.ml_user_id) || 'Conta ML';
         
         // Enviar notificação de teste
         await sendTokenRefreshNotification({

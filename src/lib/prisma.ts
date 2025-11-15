@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 // Evita múltiplas instâncias no hot-reload do Next (dev)
 declare global {
@@ -14,8 +14,8 @@ const connectionUrl = process.env.DATABASE_URL
   ? `${process.env.DATABASE_URL}${process.env.DATABASE_URL.includes('?') ? '&' : '?'}connection_limit=10&pool_timeout=20&connect_timeout=10`
   : undefined;
 
-const prismaConfig = {
-  log: ["warn", "error"] as const,
+const prismaConfig: Prisma.PrismaClientOptions = {
+  log: ["warn", "error"],
   datasources: {
     db: {
       url: connectionUrl
