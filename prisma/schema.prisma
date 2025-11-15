@@ -1,0 +1,436 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String              @id @default(uuid())
+  name              String
+  email             String              @unique @db.Citext
+  passwordHash      String              @map("password_hash")
+  country           String?             @db.VarChar(2)
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  blingAccounts     BlingAccount[]
+  blingOauthStates  BlingOauthState[]
+  categorias        Categoria[]
+  contasPagar       ContaPagar[]
+  contasReceber     ContaReceber[]
+  formasPagamento   FormaPagamento[]
+  meliAccounts      MeliAccount[]
+  meliOauthStates   MeliOauthState[]
+  meliVendas        MeliVenda[]
+  shopeeAccounts    ShopeeAccount[]
+  shopeeOauthStates ShopeeOauthState[]
+  shopeeVendas      ShopeeVenda[]
+  skus              SKU[]
+  skuCustoHistorico SKUCustoHistorico[]
+  notifications     SyncNotification[]
+  settings          UserSettings?
+  aliquotasImposto  AliquotaImposto[]
+
+  @@index([createdAt])
+  @@map("usuario")
+}
+
+model MeliAccount {
+  id                        String      @id @default(cuid())
+  userId                    String
+  ml_user_id                Int
+  nickname                  String?
+  access_token              String
+  refresh_token             String
+  expires_at                DateTime
+  refresh_token_invalid_until DateTime?
+  created_at                DateTime    @default(now())
+  updated_at                DateTime    @updatedAt
+  user                      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  meliVendas                MeliVenda[]
+
+  @@unique([userId, ml_user_id], name: "userId_ml_user_id")
+  @@map("meli_account")
+}
+
+model MeliOauthState {
+  id         String   @id @default(cuid())
+  state      String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expires_at])
+  @@map("meli_oauth_state")
+}
+
+model ShopeeAccount {
+  id                        String        @id @default(cuid())
+  userId                    String        @map("user_id")
+  shop_id                   String
+  shop_name                 String?       @map("shop_name")
+  merchant_id               String?
+  access_token              String
+  refresh_token             String
+  expires_at                DateTime
+  refresh_token_invalid_until DateTime?
+  created_at                DateTime      @default(now())
+  updated_at                DateTime      @updatedAt
+  user                      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopeeVendas              ShopeeVenda[]
+
+  @@unique([userId, shop_id], name: "userId_shop_id")
+  @@map("shopee_account")
+}
+
+model ShopeeOauthState {
+  id         String   @id @default(cuid())
+  state      String   @unique
+  userId     String   @map("user_id")
+  expires_at DateTime
+  created_at DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expires_at])
+  @@map("shopee_oauth_state")
+}
+
+model BlingAccount {
+  id                        String   @id @default(cuid())
+  userId                    String   @map("user_id")
+  bling_user_id             String?  @map("bling_user_id")
+  account_name              String?  @map("account_name")
+  access_token              String
+  refresh_token             String
+  expires_at                DateTime
+  refresh_token_invalid_until DateTime?
+  created_at                DateTime @default(now())
+  updated_at                DateTime @updatedAt
+  user                      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bling_user_id], name: "userId_bling_user_id")
+  @@map("bling_account")
+}
+
+model BlingOauthState {
+  id         String   @id @default(cuid())
+  state      String   @unique
+  userId     String   @map("user_id")
+  expires_at DateTime
+  created_at DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expires_at])
+  @@map("bling_oauth_state")
+}
+
+model MeliVenda {
+  id                 String      @id @default(cuid())
+  orderId            String      @unique @map("order_id")
+  userId             String      @map("user_id")
+  meliAccountId      String      @map("meli_account_id")
+  dataVenda          DateTime    @map("data_venda")
+  status             String
+  conta              String
+  valorTotal         Decimal     @map("valor_total") @db.Decimal(10, 2)
+  quantidade         Int
+  unitario           Decimal     @map("valor_unitario") @db.Decimal(10, 2)
+  taxaPlataforma     Decimal?    @map("taxa_plataforma") @db.Decimal(10, 2)
+  frete              Decimal     @map("valor_frete") @db.Decimal(10, 2)
+  cmv                Decimal?    @map("cmv") @db.Decimal(10, 2)
+  margemContribuicao Decimal?    @map("margem_contribuicao") @db.Decimal(10, 2)
+  isMargemReal       Boolean     @default(false) @map("is_margem_real")
+  titulo             String
+  sku                String?
+  comprador          String
+  logisticType       String?     @map("logistic_type")
+  envioMode          String?     @map("envio_mode")
+  shippingStatus     String?     @map("shipping_status")
+  shippingId         String?     @map("shipping_id")
+  exposicao          String?
+  tipoAnuncio        String?     @map("tipo_anuncio")
+  ads                String?
+  plataforma         String      @default("Mercado Livre")
+  canal              String      @default("ML")
+  tags               Json?
+  internalTags       Json?       @map("internal_tags")
+  rawData            Json?       @map("raw_data")
+  sincronizadoEm     DateTime    @default(now()) @map("sincronizado_em")
+  atualizadoEm       DateTime    @updatedAt @map("atualizado_em")
+  latitude           Decimal?    @db.Decimal(10, 7)
+  longitude          Decimal?    @db.Decimal(10, 7)
+  freteAdjustment    Decimal?    @map("frete_adjustment") @db.Decimal(10, 2)
+  freteAjuste        Decimal?    @map("frete_ajuste") @db.Decimal(12, 2)
+  freteBaseCost      Decimal?    @map("frete_base_cost") @db.Decimal(10, 2)
+  freteCalculation   Json?       @map("frete_calculation")
+  freteFinalCost     Decimal?    @map("frete_final_cost") @db.Decimal(10, 2)
+  freteListCost      Decimal?    @map("frete_list_cost") @db.Decimal(10, 2)
+  meliAccount        MeliAccount @relation(fields: [meliAccountId], references: [id], onDelete: Cascade)
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([meliAccountId])
+  @@index([dataVenda])
+  @@index([orderId])
+  @@index([userId, dataVenda(sort: Desc)]) // Índice composto para queries principais
+  @@index([sku]) // Índice para busca por SKU
+  @@index([status]) // Índice para filtros de status
+  @@map("meli_venda")
+}
+
+model ShopeeVenda {
+  id                 String        @id @default(cuid())
+  orderId            String        @unique @map("order_id")
+  userId             String        @map("user_id")
+  shopeeAccountId    String        @map("shopee_account_id")
+  dataVenda          DateTime      @map("data_venda")
+  status             String
+  conta              String
+  valorTotal         Decimal       @map("valor_total") @db.Decimal(10, 2)
+  quantidade         Int
+  unitario           Decimal       @map("valor_unitario") @db.Decimal(10, 2)
+  taxaPlataforma     Decimal?      @map("taxa_plataforma") @db.Decimal(10, 2)
+  frete              Decimal       @map("valor_frete") @db.Decimal(10, 2)
+  freteAjuste        Decimal?      @map("frete_ajuste") @db.Decimal(12, 2)
+  cmv                Decimal?      @map("cmv") @db.Decimal(10, 2)
+  margemContribuicao Decimal?      @map("margem_contribuicao") @db.Decimal(10, 2)
+  isMargemReal       Boolean       @default(false) @map("is_margem_real")
+  titulo             String
+  sku                String?
+  comprador          String
+  logisticType       String?       @map("logistic_type")
+  envioMode          String?       @map("envio_mode")
+  shippingStatus     String?       @map("shipping_status")
+  shippingId         String?       @map("shipping_id")
+  paymentMethod      String?       @map("payment_method")
+  paymentStatus      String?       @map("payment_status")
+  latitude           Decimal?      @db.Decimal(10, 7)
+  longitude          Decimal?      @db.Decimal(10, 7)
+  freteBaseCost      Decimal?      @map("frete_base_cost") @db.Decimal(10, 2)
+  freteListCost      Decimal?      @map("frete_list_cost") @db.Decimal(10, 2)
+  freteFinalCost     Decimal?      @map("frete_final_cost") @db.Decimal(10, 2)
+  freteAdjustment    Decimal?      @map("frete_adjustment") @db.Decimal(10, 2)
+  freteCalculation   Json?         @map("frete_calculation")
+  shipmentDetails    Json?         @map("shipment_details")
+  paymentDetails     Json?         @map("payment_details")
+  plataforma         String        @default("Shopee")
+  canal              String        @default("SP")
+  tags               Json?
+  internalTags       Json?         @map("internal_tags")
+  rawData            Json?         @map("raw_data")
+  sincronizadoEm     DateTime      @default(now()) @map("sincronizado_em")
+  atualizadoEm       DateTime      @updatedAt @map("atualizado_em")
+  shopeeAccount      ShopeeAccount @relation(fields: [shopeeAccountId], references: [id], onDelete: Cascade)
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([shopeeAccountId])
+  @@index([dataVenda])
+  @@index([orderId])
+  @@index([userId, dataVenda(sort: Desc)]) // Índice composto para queries principais
+  @@index([sku]) // Índice para busca por SKU
+  @@index([status]) // Índice para filtros de status
+  @@map("shopee_venda")
+}
+
+model UserSettings {
+  id              String    @id @default(cuid())
+  userId          String    @unique @map("user_id")
+  autoSyncEnabled Boolean   @default(false) @map("auto_sync_enabled")
+  lastAutoSyncAt  DateTime? @map("last_auto_sync_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model SyncNotification {
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  type           String    @default("new_orders")
+  title          String
+  message        String
+  newOrdersCount Int       @default(0) @map("new_orders_count")
+  isRead         Boolean   @default(false) @map("is_read")
+  readAt         DateTime? @map("read_at")
+  metadata       Json?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("sync_notification")
+}
+
+model SKU {
+  id             String              @id @default(cuid())
+  userId         String              @map("user_id")
+  sku            String              @unique
+  produto        String
+  tipo           String              @default("filho")
+  skuPai         String?             @map("sku_pai")
+  custoUnitario  Decimal             @map("custo_unitario") @db.Decimal(10, 2)
+  quantidade     Int                 @default(0)
+  proporcao      Decimal?            @map("proporcao") @db.Decimal(5, 4)
+  hierarquia1    String?             @map("hierarquia_1")
+  hierarquia2    String?             @map("hierarquia_2")
+  ativo          Boolean             @default(true)
+  temEstoque     Boolean             @default(true) @map("tem_estoque")
+  skusFilhos     Json?               @map("skus_filhos")
+  observacoes    String?
+  tags           Json?
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  custoHistorico SKUCustoHistorico[]
+
+  @@unique([userId, sku])
+  @@index([userId])
+  @@index([sku])
+  @@index([tipo])
+  @@index([ativo])
+  @@index([temEstoque])
+  @@map("sku")
+}
+
+model SKUCustoHistorico {
+  id            String   @id @default(cuid())
+  skuId         String   @map("sku_id")
+  userId        String   @map("user_id")
+  custoAnterior Decimal? @map("custo_anterior") @db.Decimal(10, 2)
+  custoNovo     Decimal  @map("custo_novo") @db.Decimal(10, 2)
+  quantidade    Int      @default(0)
+  motivo        String?
+  tipoAlteracao String   @map("tipo_alteracao")
+  alteradoPor   String?  @map("alterado_por")
+  createdAt     DateTime @default(now()) @map("created_at")
+  sku           SKU      @relation(fields: [skuId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([skuId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("sku_custo_historico")
+}
+
+model FormaPagamento {
+  id             String         @id @default(cuid())
+  userId         String         @map("user_id")
+  blingId        String?        @map("bling_id")
+  nome           String
+  descricao      String?
+  tipo           String?
+  ativo          Boolean        @default(true)
+  sincronizadoEm DateTime       @default(now()) @map("sincronizado_em")
+  atualizadoEm   DateTime       @updatedAt @map("atualizado_em")
+  contasPagar    ContaPagar[]
+  contasReceber  ContaReceber[]
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blingId])
+  @@index([userId])
+  @@index([blingId])
+  @@map("forma_pagamento")
+}
+
+model Categoria {
+  id              String         @id @default(cuid())
+  userId          String         @map("user_id")
+  blingId         String?        @map("bling_id")
+  nome            String
+  descricao       String?
+  tipo            String?
+  ativo           Boolean        @default(true)
+  categoriaPaiId  String?        @map("categoria_pai_id")
+  sincronizadoEm  DateTime       @default(now()) @map("sincronizado_em")
+  atualizadoEm    DateTime       @updatedAt @map("atualizado_em")
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoriaPai    Categoria?     @relation("SubCategorias", fields: [categoriaPaiId], references: [id], onDelete: SetNull)
+  subCategorias   Categoria[]    @relation("SubCategorias")
+  contasPagar     ContaPagar[]
+  contasReceber   ContaReceber[]
+
+  @@unique([userId, blingId], name: "userId_blingId")
+  @@index([userId])
+  @@index([blingId])
+  @@index([categoriaPaiId])
+  @@map("categoria")
+}
+
+model ContaPagar {
+  id               String          @id @default(cuid())
+  userId           String          @map("user_id")
+  blingId          String?         @map("bling_id")
+  formaPagamentoId String?         @map("forma_pagamento_id")
+  categoriaId      String?         @map("categoria_id")
+  descricao        String
+  historico        String?
+  valor            Decimal         @db.Decimal(10, 2)
+  dataVencimento   DateTime        @map("data_vencimento")
+  dataPagamento    DateTime?       @map("data_pagamento")
+  dataCompetencia  DateTime?       @map("data_competencia")
+  status           String          @default("pendente")
+  origem           String          @default("MANUAL") // MANUAL, SINCRONIZACAO, EXCEL
+  sincronizadoEm   DateTime        @default(now()) @map("sincronizado_em")
+  atualizadoEm     DateTime        @updatedAt @map("atualizado_em")
+  categoria        Categoria?      @relation(fields: [categoriaId], references: [id])
+  formaPagamento   FormaPagamento? @relation(fields: [formaPagamentoId], references: [id])
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blingId])
+  @@index([userId])
+  @@index([blingId])
+  @@index([dataVencimento])
+  @@index([origem])
+  @@map("conta_pagar")
+}
+
+model ContaReceber {
+  id               String          @id @default(cuid())
+  userId           String          @map("user_id")
+  blingId          String?         @map("bling_id")
+  formaPagamentoId String?         @map("forma_pagamento_id")
+  categoriaId      String?         @map("categoria_id")
+  descricao        String
+  valor            Decimal         @db.Decimal(10, 2)
+  dataVencimento   DateTime        @map("data_vencimento")
+  dataRecebimento  DateTime?       @map("data_recebimento")
+  status           String          @default("pendente")
+  origem           String          @default("MANUAL") // MANUAL, SINCRONIZACAO, EXCEL
+  sincronizadoEm   DateTime        @default(now()) @map("sincronizado_em")
+  atualizadoEm     DateTime        @updatedAt @map("atualizado_em")
+  categoria        Categoria?      @relation(fields: [categoriaId], references: [id])
+  formaPagamento   FormaPagamento? @relation(fields: [formaPagamentoId], references: [id])
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blingId])
+  @@index([userId])
+  @@index([blingId])
+  @@index([dataVencimento])
+  @@index([origem])
+  @@map("conta_receber")
+}
+
+model AliquotaImposto {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  conta          String   // Conta/CNPJ (ex: "Mercado Livre - Moscou", "Shopee Principal")
+  aliquota       Decimal  @db.Decimal(5, 2) // Percentual (ex: 5.00 para 5%)
+  dataInicio     DateTime @map("data_inicio")
+  dataFim        DateTime @map("data_fim")
+  descricao      String?  // Descrição adicional (ex: "Simples Nacional", "Lucro Presumido")
+  ativo          Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([conta])
+  @@index([dataInicio, dataFim])
+  @@index([ativo])
+  @@map("aliquota_imposto")
+}

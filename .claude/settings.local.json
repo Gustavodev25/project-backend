@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Select-Object FullName)",
+      "Bash(test:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(meli-sync): implementar sincronização completa sem limites\n\nMelhorias implementadas:\n- Busca TODAS as vendas do histórico (suporta 1k até 50k+ vendas)\n- Divisão automática de períodos com mais de 9.950 vendas\n- Sub-períodos recursivos (7-14 dias) para contornar limite da API\n- Batch size otimizado de 10 para 50 vendas\n- Mensagens de progresso detalhadas (página, período, porcentagem)\n- Garantia de sincronização completa sem perda de dados\n\nResolve problema de contas com grande volume de vendas que não \nconseguiam sincronizar todo o histórico devido ao limite de 10k\nda API do Mercado Livre.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push)",
+      "Bash(git config:*)",
+      "Bash(git commit:*)",
+      "Bash(npx tsc:*)",
+      "Bash(dir:*)",
+      "Bash(node -c:*)",
+      "Bash(cat:*)",
+      "Bash(Select-String \"src/app/api/meli/vendas/sync/route.ts\")",
+      "Bash(iconv:*)",
+      "Bash(git checkout:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(Select-String \"CRON_SYNC_README\")",
+      "Bash(find:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run prisma:generate:*)",
+      "Bash(npm run:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

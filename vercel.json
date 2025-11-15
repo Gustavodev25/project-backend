@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/meli-sync",
+      "schedule": "0 */2 * * *"
+    }
+  ],
+  "functions": {
+    "src/app/api/cron/meli-sync/route.ts": {
+      "maxDuration": 300
+    },
+    "src/app/api/meli/vendas/sync/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
