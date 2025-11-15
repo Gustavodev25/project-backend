@@ -11,7 +11,7 @@ export async function GET() {
     const owners = await prisma.contaReceber.groupBy({
       by: ['userId'],
       _count: { _all: true },
-      orderBy: { _count: { _all: 'desc' } },
+      orderBy: { _count: { userId: 'desc' } },
       where: {},
     });
     return NextResponse.json({ ok: true, owners });
