@@ -1,10 +1,8 @@
 import { NextRequest } from "next/server";
+import { listeners } from "@/lib/import-progress";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// Map para armazenar listeners por sessionId
-const listeners = new Map<string, Set<(data: string) => void>>();
 
 export async function GET(request: NextRequest) {
   // Obter sessionId da URL (query parameter)
@@ -50,39 +48,5 @@ export async function GET(request: NextRequest) {
       'Connection': 'keep-alive',
       'X-Accel-Buffering': 'no',
     },
-  });
-}
-
-// Função helper para enviar progresso
-export function sendImportProgress(sessionId: string, data: {
-  type: 'import_start' | 'import_progress' | 'import_complete' | 'import_error';
-  totalRows: number;
-  processedRows: number;
-  importedRows: number;
-  errorRows: number;
-  message?: string;
-}) {
-  const sessionListeners = listeners.get(sessionId);
-  
-  console.log(`[Import SSE] Tentando enviar para sessão ${sessionId}:`, {
-    hasListeners: !!sessionListeners,
-    listenersCount: sessionListeners?.size || 0,
-    data
-  });
-  
-  if (!sessionListeners || sessionListeners.size === 0) {
-    console.warn(`[Import SSE] Nenhum listener encontrado para sessão: ${sessionId}`);
-    console.log('[Import SSE] Sessões ativas:', Array.from(listeners.keys()));
-    return;
-  }
-
-  const payload = JSON.stringify(data);
-  sessionListeners.forEach(listener => {
-    try {
-      listener(payload);
-      console.log(`[Import SSE] Evento enviado para sessão ${sessionId}`);
-    } catch (error) {
-      console.error(`[Import SSE] Erro ao enviar evento:`, error);
-    }
   });
 }

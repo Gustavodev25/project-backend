@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
 import { tryVerifySessionToken } from "@/lib/auth";
 import { getBlingContasPagar, getBlingContaPagarById, getBlingCategoriaById, refreshBlingAccountToken } from "@/lib/bling";
-import { sendProgressToUser, closeUserConnection } from "../../sync-progress/route";
+import { sendProgressToUser, closeUserConnection } from "@/lib/sync-progress";
 
 export const runtime = "nodejs";
 

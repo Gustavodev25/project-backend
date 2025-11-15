@@ -1,11 +1,9 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { tryVerifySessionToken } from "@/lib/auth";
+import { connections } from "@/lib/sync-progress";
 
 export const runtime = "nodejs";
-
-// Store para manter as conexões SSE ativas
-const connections = new Map<string, ReadableStreamDefaultController>();
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,40 +54,6 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Erro no SSE de progresso:", error);
     return new Response("Erro interno", { status: 500 });
-  }
-}
-
-// Função para enviar progresso para um usuário específico
-export function sendProgressToUser(userId: string, progress: {
-  type: "sync_start" | "sync_progress" | "sync_complete" | "sync_error";
-  title: string;
-  message: string;
-  progressValue?: number;
-  progressMax?: number;
-  progressLabel?: string;
-}) {
-  const controller = connections.get(userId);
-  if (controller) {
-    try {
-      const data = JSON.stringify(progress);
-      controller.enqueue(`data: ${data}\n\n`);
-    } catch (error) {
-      console.error("Erro ao enviar progresso:", error);
-      connections.delete(userId);
-    }
-  }
-}
-
-// Função para limpar conexão de um usuário
-export function closeUserConnection(userId: string) {
-  const controller = connections.get(userId);
-  if (controller) {
-    try {
-      controller.close();
-    } catch (error) {
-      console.error("Erro ao fechar conexão:", error);
-    }
-    connections.delete(userId);
   }
 }
 
