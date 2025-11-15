@@ -378,7 +378,6 @@ export async function GET(req: NextRequest) {
     // Buscar alíquotas ativas do usuário (com fallback se modelo não existir)
     let aliquotas: any[] = [];
     try {
-      // @ts-expect-error - modelo será disponível após executar migration
       if (prisma.aliquotaImposto) {
         aliquotas = await prisma.aliquotaImposto.findMany({
           where: {
