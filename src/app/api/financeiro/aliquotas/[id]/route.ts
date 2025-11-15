@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 // PUT - Atualizar alíquota
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const sessionCookie = req.cookies.get("session")?.value;
   let session;
@@ -18,12 +18,11 @@ export async function PUT(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { conta, aliquota, dataInicio, dataFim, descricao, ativo } = body;
 
     // Verificar se a alíquota existe e pertence ao usuário
-    // @ts-expect-error - modelo será disponível após executar migration
     const aliquotaExistente = await prisma.aliquotaImposto.findUnique({
       where: { id },
     });
@@ -54,7 +53,6 @@ export async function PUT(
       }
     }
 
-    // @ts-expect-error - modelo será disponível após executar migration
     const aliquotaAtualizada = await prisma.aliquotaImposto.update({
       where: { id },
       data: {
@@ -80,7 +78,7 @@ export async function PUT(
 // DELETE - Deletar alíquota
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const sessionCookie = req.cookies.get("session")?.value;
   let session;
@@ -91,10 +89,9 @@ export async function DELETE(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Verificar se a alíquota existe e pertence ao usuário
-    // @ts-expect-error - modelo será disponível após executar migration
     const aliquota = await prisma.aliquotaImposto.findUnique({
       where: { id },
     });
@@ -106,7 +103,6 @@ export async function DELETE(
       );
     }
 
-    // @ts-expect-error - modelo será disponível após executar migration
     await prisma.aliquotaImposto.delete({
       where: { id },
     });
