@@ -1,13 +1,13 @@
-// Force dynamic rendering for API-only backend
+// Force dynamic rendering
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 export const revalidate = 0;
 
-export default function Home() {
+export default function NotFound() {
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-      <h1>ContaZoom API</h1>
-      <p>Backend API está rodando.</p>
+      <h1>404 - Página não encontrada</h1>
+      <p>A rota que você está procurando não existe.</p>
     </div>
   );
 }
