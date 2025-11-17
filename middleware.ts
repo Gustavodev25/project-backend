@@ -2,31 +2,27 @@
 import type { NextRequest } from "next/server";
 import { tryVerifySessionToken } from "@/lib/auth";
 
-const protectedRoutes = ["/dashboard", "/contas"];
-const authRoutes = ["/login", "/register"];
+// DESABILITADO para backend API-only
+// Este middleware era para proteger páginas do frontend que não existem mais
+// const protectedRoutes = ["/dashboard", "/contas"];
+// const authRoutes = ["/login", "/register"];
 
 export async function middleware(request: NextRequest) {
   const currentUrl = new URL(request.url);
   const { pathname } = request.nextUrl;
+
+  // Para API-only backend, apenas processar lógica do Shopee
   const sessionCookie = request.cookies.get("session")?.value;
   const session = await tryVerifySessionToken(sessionCookie);
   const isAuthenticated = Boolean(session);
 
-  console.log("🔍 Middleware Debug:", {
-    pathname,
-    hasSessionCookie: !!sessionCookie,
-    isAuthenticated,
-    session: session ? { sub: session.sub, email: session.email } : null
-  });
-
   if (currentUrl.searchParams.get("connect") === "shopee") {
     if (!isAuthenticated) {
-      const loginUrl = new URL("/login", request.url);
-      if (loginUrl.hostname === "localhost" || loginUrl.hostname === "127.0.0.1") {
-        loginUrl.protocol = "http:";
-      }
-      loginUrl.searchParams.set("redirect", `${currentUrl.pathname}${currentUrl.search}`);
-      return NextResponse.redirect(loginUrl);
+      // API-only: retornar erro em vez de redirecionar para página de login
+      return NextResponse.json(
+        { error: "Authentication required for Shopee connection" },
+        { status: 401 }
+      );
     }
 
     const partnerId = process.env.SHOPEE_PARTNER_ID;
@@ -87,48 +83,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(cbUrl);
   }
 
-  // Proteger rotas que precisam de autenticação
-  if (protectedRoutes.some((route) => pathname.startsWith(route)) && !isAuthenticated) {
-    const loginUrl = new URL("/login", request.url);
-    if (loginUrl.hostname === "localhost" || loginUrl.hostname === "127.0.0.1") {
-      loginUrl.protocol = "http:";
-    }
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Redirecionar usuários autenticados que tentam acessar rotas de auth
-  if (authRoutes.some((route) => pathname.startsWith(route)) && isAuthenticated) {
-    const dashboardUrl = new URL("/dashboard", request.url);
-    if (dashboardUrl.hostname === "localhost" || dashboardUrl.hostname === "127.0.0.1") {
-      dashboardUrl.protocol = "http:";
-    }
-    console.log("🔄 Middleware: Usuário autenticado em rota de auth, redirecionando para dashboard");
-    return NextResponse.redirect(dashboardUrl);
-  }
-
-  // Redirecionar root baseado em autenticação
-  if (pathname === "/") {
-    if (isAuthenticated) {
-      const dashboardUrl = new URL("/dashboard", request.url);
-      if (dashboardUrl.hostname === "localhost" || dashboardUrl.hostname === "127.0.0.1") {
-        dashboardUrl.protocol = "http:";
-      }
-      return NextResponse.redirect(dashboardUrl);
-    } else {
-      const loginUrl = new URL("/login", request.url);
-      if (loginUrl.hostname === "localhost" || loginUrl.hostname === "127.0.0.1") {
-        loginUrl.protocol = "http:";
-      }
-      return NextResponse.redirect(loginUrl);
-    }
-  }
+  // REMOVIDO: Proteção de rotas de páginas que não existem mais
+  // Backend API-only não precisa redirecionar para /dashboard, /login, etc.
 
   return NextResponse.next();
 }
 
+// Configuração atualizada para API-only backend
+// Matcher específico apenas para rotas necessárias (callback do Shopee)
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Apenas processar a raiz (/) para callbacks do Shopee
+    "/",
   ],
 };
