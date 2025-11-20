@@ -40,7 +40,7 @@ model User {
 model MeliAccount {
   id                        String      @id @default(cuid())
   userId                    String
-  ml_user_id                Int
+  ml_user_id                BigInt
   nickname                  String?
   access_token              String
   refresh_token             String
