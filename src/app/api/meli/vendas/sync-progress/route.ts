@@ -4,6 +4,13 @@ import { addConnection, removeConnection } from "@/lib/sse-progress";
 
 export const runtime = "nodejs";
 
+const ALLOWED_ORIGINS = new Set([
+  "https://project-livid-tau.vercel.app",
+  "https://project-backend-rjoh.onrender.com",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+]);
+
 export async function GET(req: NextRequest) {
   console.log('[SSE sync-progress] Nova requisição recebida');
 
@@ -52,12 +59,21 @@ export async function GET(req: NextRequest) {
     }
   });
 
+  const origin = req.headers.get("origin") || "";
+  const allowOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "";
+
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       "Connection": "keep-alive",
-      "Access-Control-Allow-Origin": "*",
+      ...(allowOrigin
+        ? {
+            "Access-Control-Allow-Origin": allowOrigin,
+            "Access-Control-Allow-Credentials": "true",
+            "Vary": "Origin",
+          }
+        : {}),
       "Access-Control-Allow-Headers": "Cache-Control",
     },
   });
